@@ -1,13 +1,23 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import ChatBubble from './ChatBubble';
 import OptionBubble from './OptionBubble';
+import TypingIndicator from './TypingIndicator';
 
 interface Message {
   text: string;
   sender: 'user' | 'bot';
 }
 
-type ConversationState = 'initial' | 'awaiting_email' | 'email_collected';
+type ConversationState =
+  | 'initial'
+  | 'awaiting_main_choice'
+  | 'awaiting_professional_choice'
+  | 'awaiting_internship_choice'
+  | 'awaiting_personal_choice'
+  | 'awaiting_academic_choice'
+  | 'awaiting_email'
+  | 'email_collected'
+  | 'awaiting_restart';
 
 export default function ChatWindow() {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,8 +26,16 @@ export default function ChatWindow() {
   ]);
   const [input, setInput] = useState('');
   const [showOptions, setShowOptions] = useState(true);
-  const [conversationState, setConversationState] = useState<ConversationState>('initial');
+  const [isTyping, setIsTyping] = useState(false);
+  const [conversationState, setConversationState] = useState<ConversationState>('awaiting_main_choice');
   const [selectedService, setSelectedService] = useState<string>('');
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -29,20 +47,26 @@ export default function ChatWindow() {
     if (conversationState === 'awaiting_email') {
       const emailRegex = /\S+@\S+\.\S+/;
       if (emailRegex.test(input)) {
+        setIsTyping(true);
         await sendEmail(selectedService, input);
-        const botMessage: Message = { text: "Thank you! We will get back to you shortly.", sender: 'bot' };
-        setMessages(prev => [...prev, botMessage]);
-        setConversationState('email_collected');
+        setIsTyping(false);
+        const botMessage1: Message = { text: "Thank you! We will get back to you shortly.", sender: 'bot' };
+        const botMessage2: Message = { text: "Do you want to make another request?", sender: 'bot' };
+        setMessages(prev => [...prev, botMessage1, botMessage2]);
+        setConversationState('awaiting_restart');
+        setShowOptions(true);
       } else {
         const botMessage: Message = { text: "Please enter a valid email address.", sender: 'bot' };
         setMessages(prev => [...prev, botMessage]);
       }
     } else {
       // Mock bot response for general chat
+      setIsTyping(true);
       setTimeout(() => {
+        setIsTyping(false);
         const botMessage: Message = { text: `I received: "${input}"`, sender: 'bot' };
         setMessages(prev => [...prev, botMessage]);
-      }, 500);
+      }, 1000);
     }
   };
 
@@ -50,13 +74,43 @@ export default function ChatWindow() {
     const userMessage: Message = { text: option, sender: 'user' };
     setMessages(prev => [...prev, userMessage]);
     setShowOptions(false);
-    setSelectedService(option);
-    setConversationState('awaiting_email');
+    setIsTyping(true);
 
     setTimeout(() => {
-      const botMessage: Message = { text: "Great! What is your email address?", sender: 'bot' };
-      setMessages(prev => [...prev, botMessage]);
-    }, 500);
+      setIsTyping(false);
+      if (conversationState === 'awaiting_main_choice') {
+        setSelectedService(option);
+        if (option === 'Professional' || option === 'Internship') {
+          setConversationState(option === 'Professional' ? 'awaiting_professional_choice' : 'awaiting_internship_choice');
+          const botMessage: Message = { text: `Great! What topic are you interested in?`, sender: 'bot' };
+          setMessages(prev => [...prev, botMessage]);
+          setShowOptions(true);
+        } else if (option === 'Personal') {
+          setConversationState('awaiting_personal_choice');
+          const botMessage: Message = { text: `Great! What topic are you interested in?`, sender: 'bot' };
+          setMessages(prev => [...prev, botMessage]);
+          setShowOptions(true);
+        } else if (option === 'Academic') {
+          setConversationState('awaiting_academic_choice');
+          const botMessage: Message = { text: `Great! What topic are you interested in?`, sender: 'bot' };
+          setMessages(prev => [...prev, botMessage]);
+          setShowOptions(true);
+        }
+      } else if (conversationState === 'awaiting_restart') {
+        if (option === 'Yes') {
+          setMessages([{ text: "What kind of tutoring are you looking for?", sender: 'bot' }]);
+          setConversationState('awaiting_main_choice');
+          setShowOptions(true);
+        } else {
+          setIsOpen(false);
+        }
+      } else {
+        setSelectedService(prev => `${prev} - ${option}`);
+        setConversationState('awaiting_email');
+        const botMessage: Message = { text: "Great! What is your email address?", sender: 'bot' };
+        setMessages(prev => [...prev, botMessage]);
+      }
+    }, 1000);
   };
 
   const sendEmail = async (service: string, email: string) => {
@@ -73,6 +127,58 @@ export default function ChatWindow() {
       // Handle error gracefully in the UI
       const botMessage: Message = { text: "Sorry, something went wrong. Please try again later.", sender: 'bot' };
       setMessages(prev => [...prev, botMessage]);
+    }
+  };
+
+  const renderOptions = () => {
+    if (!showOptions || isTyping) return null;
+
+    switch (conversationState) {
+      case 'awaiting_main_choice':
+        return (
+          <div className="flex justify-center items-center flex-wrap">
+            <OptionBubble text="Academic" onClick={() => handleOptionClick("Academic")} />
+            <OptionBubble text="Internship" onClick={() => handleOptionClick("Internship")} />
+            <OptionBubble text="Professional" onClick={() => handleOptionClick("Professional")} />
+            <OptionBubble text="Personal" onClick={() => handleOptionClick("Personal")} />
+          </div>
+        );
+      case 'awaiting_professional_choice':
+      case 'awaiting_internship_choice':
+        return (
+          <div className="flex justify-center items-center flex-wrap">
+            <OptionBubble text="Git" onClick={() => handleOptionClick("Git")} />
+            <OptionBubble text="GitHub" onClick={() => handleOptionClick("GitHub")} />
+            <OptionBubble text="Command Line" onClick={() => handleOptionClick("Command Line")} />
+            <OptionBubble text="Docker" onClick={() => handleOptionClick("Docker")} />
+            <OptionBubble text="ChatGPT" onClick={() => handleOptionClick("ChatGPT")} />
+          </div>
+        );
+      case 'awaiting_personal_choice':
+        return (
+          <div className="flex justify-center items-center flex-wrap">
+            <OptionBubble text="App" onClick={() => handleOptionClick("App")} />
+            <OptionBubble text="Website" onClick={() => handleOptionClick("Website")} />
+            <OptionBubble text="Database" onClick={() => handleOptionClick("Database")} />
+          </div>
+        );
+      case 'awaiting_academic_choice':
+        return (
+          <div className="flex justify-center items-center flex-wrap">
+            <OptionBubble text="Computer Science" onClick={() => handleOptionClick("Computer Science")} />
+            <OptionBubble text="Coding" onClick={() => handleOptionClick("Coding")} />
+            <OptionBubble text="Databases" onClick={() => handleOptionClick("Databases")} />
+          </div>
+        );
+      case 'awaiting_restart':
+        return (
+          <div className="flex justify-center items-center flex-wrap">
+            <OptionBubble text="Yes" onClick={() => handleOptionClick("Yes")} />
+            <OptionBubble text="No" onClick={() => setIsOpen(false)} />
+          </div>
+        );
+      default:
+        return null;
     }
   };
 
@@ -93,18 +199,12 @@ export default function ChatWindow() {
         <h3 className="font-bold">Tutor Bot</h3>
         <button onClick={() => setIsOpen(false)} className="text-white font-bold">_</button>
       </div>
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
         {messages.map((msg, index) => (
           <ChatBubble key={index} text={msg.text} sender={msg.sender} />
         ))}
-        {showOptions && (
-          <div className="flex justify-center items-center flex-wrap">
-            <OptionBubble text="Academic" onClick={() => handleOptionClick("Academic")} />
-            <OptionBubble text="Internship" onClick={() => handleOptionClick("Internship")} />
-            <OptionBubble text="Professional" onClick={() => handleOptionClick("Professional")} />
-            <OptionBubble text="Personal" onClick={() => handleOptionClick("Personal")} />
-          </div>
-        )}
+        {isTyping && <TypingIndicator />}
+        {renderOptions()}
       </div>
       <div className="p-4 border-t">
         <div className="flex">
