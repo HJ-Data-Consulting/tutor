@@ -182,45 +182,52 @@ export default function ChatWindow() {
     }
   };
 
-  if (!isOpen) {
-    return (
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors"
-      >
-        Chat
-      </button>
-    );
-  }
-
   return (
-    <div className="fixed bottom-4 right-4 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col">
-      <div className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center">
-        <h3 className="font-bold">Tutor Bot</h3>
-        <button onClick={() => setIsOpen(false)} className="text-white font-bold">_</button>
-      </div>
-      <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
-        {messages.map((msg, index) => (
-          <ChatBubble key={index} text={msg.text} sender={msg.sender} />
-        ))}
-        {isTyping && <TypingIndicator />}
-        {renderOptions()}
-      </div>
-      <div className="p-4 border-t">
-        <div className="flex">
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            className="flex-1 border rounded-l-md p-2"
-            placeholder={conversationState === 'awaiting_email' ? "Enter your email..." : "Type a message..."}
-          />
-          <button onClick={handleSend} className="bg-black text-white px-4 rounded-r-md hover:bg-gray-800">
-            Send
-          </button>
+    <>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors z-50"
+      >
+        {isOpen ? (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+        )}
+      </button>
+      {isOpen && (
+        <div className="fixed bottom-20 right-4 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col">
+          <div className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center">
+            <h3 className="font-bold">Tutor Bot</h3>
+          </div>
+          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
+            {messages.map((msg, index) => (
+              <ChatBubble key={index} text={msg.text} sender={msg.sender} />
+            ))}
+            {isTyping && <TypingIndicator />}
+            {renderOptions()}
+          </div>
+          <div className="p-4 border-t">
+            <div className="flex">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                className="flex-1 border rounded-l-md p-2"
+                placeholder={conversationState === 'awaiting_email' ? "Enter your email..." : "Type a message..."}
+                disabled={conversationState !== 'awaiting_email'}
+              />
+              <button onClick={handleSend} className="bg-black text-white px-4 rounded-r-md hover:bg-gray-800" disabled={conversationState !== 'awaiting_email'}>
+                Send
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
