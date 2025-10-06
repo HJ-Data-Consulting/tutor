@@ -201,8 +201,7 @@ export default function ChatWindow() {
       {/* Chat Toggle Button - Sticky and always visible */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors z-50 md:bottom-6 md:right-6"
-        style={{ position: 'fixed' }} // Ensures it's always sticky
+        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors z-50 md:bottom-6 md:right-6 force-3d will-change-transform"
       >
         {isOpen ? (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -230,7 +229,7 @@ export default function ChatWindow() {
                      /* Mobile styles */
                      inset-x-2 bottom-2
                      /* Desktop styles */ 
-                     md:bottom-20 md:right-4 md:left-auto md:top-auto md:w-96 md:h-[28rem] md:inset-x-auto"
+                     md:bottom-20 md:right-4 md:left-auto md:top-auto md:w-96 md:h-[28rem] md:inset-x-auto force-3d will-change-transform"
           style={{
             // Mobile: Use calculated viewport height
             top: window.innerWidth < 768 ? '4rem' : 'auto',

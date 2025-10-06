@@ -29,7 +29,9 @@ export default function Home() {
       
       <Footer />
       
-      <ChatWindow />
+      <div style={{ position: 'relative', zIndex: 0 }}>
+        <ChatWindow />
+      </div>
     </div>
   );
 }
