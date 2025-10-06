@@ -15,14 +15,12 @@ export default function Home() {
       <main className="flex-1 pt-16">
         {/* Hero Section */}
         <section className="flex flex-col items-center justify-center p-4 py-20">
-
           <DeskAnimation />
           <header className="text-center">
             <p className="text-lg text-gray-600">
               Personalized tutoring to help you achieve your academic goals.
             </p>
           </header>
-          
         </section>
 
         <Services />
@@ -31,7 +29,6 @@ export default function Home() {
       
       <Footer />
       
-      {/* The ChatWindow will be positioned here, but fixed to the bottom right */}
       <ChatWindow />
     </div>
   );

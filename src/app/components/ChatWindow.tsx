@@ -29,6 +29,7 @@ export default function ChatWindow() {
   const [isTyping, setIsTyping] = useState(false);
   const [conversationState, setConversationState] = useState<ConversationState>('awaiting_main_choice');
   const [selectedService, setSelectedService] = useState<string>('');
+  const [windowHeight, setWindowHeight] = useState(0);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,6 +37,19 @@ export default function ChatWindow() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [messages, isTyping]);
+
+  useEffect(() => {
+    // Set initial window height
+    setWindowHeight(window.innerHeight);
+    
+    // Handle window resize
+    const handleResize = () => {
+      setWindowHeight(window.innerHeight);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -184,9 +198,11 @@ export default function ChatWindow() {
 
   return (
     <>
+      {/* Chat Toggle Button - Sticky and always visible */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors z-50"
+        className="fixed bottom-4 right-4 bg-black text-white p-4 rounded-full shadow-lg hover:bg-gray-800 transition-colors z-50 md:bottom-6 md:right-6"
+        style={{ position: 'fixed' }} // Ensures it's always sticky
       >
         {isOpen ? (
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -198,30 +214,68 @@ export default function ChatWindow() {
           </svg>
         )}
       </button>
+
+      {/* Mobile Backdrop */}
       {isOpen && (
-        <div className="fixed bottom-20 right-4 w-96 h-[28rem] bg-white rounded-lg shadow-xl flex flex-col">
-          <div className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center">
+        <div 
+          className="fixed inset-0 bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Chat Window - Responsive */}
+      {isOpen && (
+        <div 
+          className="fixed z-50 bg-white rounded-lg shadow-xl flex flex-col transition-all duration-300 ease-in-out
+                     /* Mobile styles */
+                     inset-x-2 bottom-2
+                     /* Desktop styles */ 
+                     md:bottom-20 md:right-4 md:left-auto md:top-auto md:w-96 md:h-[28rem] md:inset-x-auto"
+          style={{
+            // Mobile: Use calculated viewport height
+            top: window.innerWidth < 768 ? '4rem' : 'auto',
+            maxHeight: window.innerWidth < 768 ? `${windowHeight - 80}px` : '28rem'
+          }}
+        >
+          {/* Header */}
+          <div className="bg-black text-white p-4 rounded-t-lg flex justify-between items-center flex-shrink-0">
             <h3 className="font-bold">Tutor Bot</h3>
+            <button
+              onClick={() => setIsOpen(false)}
+              className="text-white hover:text-gray-300 transition-colors md:hidden"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto">
+
+          {/* Messages Container */}
+          <div ref={chatContainerRef} className="flex-1 p-4 overflow-y-auto min-h-0 max-h-full">
             {messages.map((msg, index) => (
               <ChatBubble key={index} text={msg.text} sender={msg.sender} />
             ))}
             {isTyping && <TypingIndicator />}
             {renderOptions()}
           </div>
-          <div className="p-4 border-t">
+
+          {/* Input Area */}
+          <div className="p-4 border-t flex-shrink-0">
             <div className="flex">
               <input
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                className="flex-1 border rounded-l-md p-2"
+                className="flex-1 border rounded-l-md p-2 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 placeholder={conversationState === 'awaiting_email' ? "Enter your email..." : "Type a message..."}
                 disabled={conversationState !== 'awaiting_email'}
               />
-              <button onClick={handleSend} className="bg-black text-white px-4 rounded-r-md hover:bg-gray-800" disabled={conversationState !== 'awaiting_email'}>
+              <button 
+                onClick={handleSend} 
+                className="bg-black text-white px-4 rounded-r-md hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                disabled={conversationState !== 'awaiting_email' || !input.trim()}
+              >
                 Send
               </button>
             </div>

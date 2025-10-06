@@ -28,9 +28,28 @@ body {
   color: var(--foreground);
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   filter: grayscale(100%);
+  /* Ensure body doesn't interfere with fixed positioning */
+  position: relative;
 }
 
 /* Remove grayscale filter from text to keep it readable */
 h1, h2, h3, h4, h5, h6, p, span, div, a, button {
   filter: none;
+}
+
+/* Ensure chat components have proper z-index and positioning */
+.chat-button-sticky {
+  position: fixed !important;
+  z-index: 9999 !important;
+}
+
+/* Force proper positioning for chat window */
+.chat-window-fixed {
+  position: fixed !important;
+  z-index: 9998 !important;
+}
+
+/* Ensure proper viewport behavior */
+html {
+  scroll-behavior: smooth;
 }

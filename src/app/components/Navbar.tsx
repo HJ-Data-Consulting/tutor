@@ -2,15 +2,26 @@
 
 import { useState } from 'react';
 
-export default function Navbar() {
+interface NavbarProps {
+  onChatClick?: () => void;
+}
+
+export default function Navbar({ onChatClick }: NavbarProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleChatClick = () => {
+    if (onChatClick) {
+      onChatClick();
+    }
+    setIsMenuOpen(false); // Close mobile menu when chat is clicked
+  };
+
   return (
-    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-white shadow-md fixed top-0 left-0 right-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -28,7 +39,7 @@ export default function Navbar() {
                 Services
               </a>
               <button 
-                onClick={() => {/* Add chat scroll functionality later */}}
+                onClick={handleChatClick}
                 className="bg-gray-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-700 transition-colors"
               >
                 Chat
@@ -85,10 +96,7 @@ export default function Navbar() {
               Services
             </a>
             <button
-              onClick={() => {
-                setIsMenuOpen(false);
-                /* Add chat scroll functionality later */
-              }}
+              onClick={handleChatClick}
               className="bg-gray-600 text-white block w-full text-left px-3 py-2 text-base font-medium hover:bg-gray-700 transition-colors rounded-md mx-3 my-2"
             >
               Chat
