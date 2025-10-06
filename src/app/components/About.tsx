@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function About() {
   return (
     <section id="about" className="py-16 px-4 bg-gray-50">
@@ -9,9 +11,11 @@ export default function About() {
         <div className="flex flex-col lg:flex-row items-center gap-12">
           {/* Profile Image */}
           <div className="flex-shrink-0">
-            <img 
+            <Image 
               src="/bio.jpeg" 
               alt="Herman Justino" 
+              width={256}
+              height={256}
               className="w-64 h-64 rounded-lg object-cover shadow-md"
             />
           </div>
@@ -20,13 +24,13 @@ export default function About() {
           <div className="flex-1">
             <div className="text-lg text-gray-700 leading-relaxed mb-8">
               <p className="mb-4">
-                Hi, I'm Herman Justino, a passionate technology educator and consultant with extensive experience in software development, cloud computing, and machine learning.
+                Hi, I&apos;m Herman Justino, a passionate technology educator and consultant with extensive experience in software development, cloud computing, and machine learning.
               </p>
               <p className="mb-4">
                 I specialize in helping students and professionals master modern development technologies, from programming fundamentals to advanced cloud deployment strategies.
               </p>
               <p>
-                My goal is to make complex technical concepts accessible and help you build the skills needed to succeed in today's tech landscape.
+                My goal is to make complex technical concepts accessible and help you build the skills needed to succeed in today&apos;s tech landscape.
               </p>
             </div>
             
